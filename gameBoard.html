@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe with AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    .game-container {
+      text-align: center;
+      width: 300px;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .game-board div {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      background-color: #fff;
+      border: 2px solid #000;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .game-board div:hover {
+      background-color: #f0f0f0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #005f6a;
+    }
+
+    #status {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .game-over {
+      pointer-events: none;
+    }
+
+    .winning-cell {
+      background-color: yellow;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Tic-Tac-Toe</h1>
+    <div id="gameBoard" class="game-board"></div>
+    <button onclick="restartGame()">Restart Game</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const gameBoard = document.getElementById('gameBoard');
+    const statusDiv = document.getElementById('status');
+    let currentPlayer = 'X'; // Player is X
+    let gameState = ['', '', '', '', '', '', '', '', '']; // Array to track the state of the game
+    let gameOver = false;
+    let winningCombination = [];
+
+    // Function to initialize the game board
+    function initBoard() {
+      gameBoard.innerHTML = '';
+      gameState = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      gameOver = false;
+      winningCombination = [];
+      statusDiv.textContent = `Player ${currentPlayer}'s turn`;
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.addEventListener('click', () => handleClick(i));
+        gameBoard.appendChild(cell);
+      }
+    }
+
+    // Handle click on a cell
+    function handleClick(index) {
+      if (gameState[index] !== '' || gameOver || currentPlayer === 'O') return; // Block click if it's AI's turn or cell is already clicked
+      
+      gameState[index] = currentPlayer;
+      const cells = gameBoard.getElementsByTagName('div');
+      cells[index].textContent = currentPlayer;
+
+      if (checkWinner()) {
+        statusDiv.textContent = `Player ${currentPlayer} wins!`;
+        highlightWinningCells();
+        gameOver = true;
+        return;
+      }
+
+      currentPlayer = 'O';
+      statusDiv.textContent = `Computer's turn`;
+      setTimeout(computerMove, 500); // Simulate AI delay
+    }
+
+    // Computer makes a move
+    function computerMove() {
+      const availableMoves = gameState
+        .map((value, index) => value === '' ? index : null)
+        .filter(value => value !== null);
+
+      if (availableMoves.length === 0) return; // No moves left, game over
+
+      const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+      gameState[randomMove] = 'O';
+      const cells = gameBoard.getElementsByTagName('div');
+      cells[randomMove].textContent = 'O';
+
+      if (checkWinner()) {
+        statusDiv.textContent = `Computer wins!`;
+        highlightWinningCells();
+        gameOver = true;
+        return;
+      }
+
+      currentPlayer = 'X';
+      statusDiv.textContent = `Player ${currentPlayer}'s turn`;
+    }
+
+    // Check if there's a winner
+    function checkWinner() {
+      const winningCombinations = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+      ];
+
+      for (const [a, b, c] of winningCombinations) {
+        if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+          winningCombination = [a, b, c];
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Highlight the winning cells
+    function highlightWinningCells() {
+      const cells = gameBoard.getElementsByTagName('div');
+      for (let index of winningCombination) {
+        cells[index].classList.add('winning-cell');
+      }
+    }
+
+    // Restart the game
+    function restartGame() {
+      gameOver = false;
+      initBoard();
+    }
+
+    // Initialize the board when the page loads
+    window.onload = initBoard;
+  </script>
+</body>
+</html>
